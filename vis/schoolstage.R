@@ -186,4 +186,78 @@ rbind(a, b) %>%
   geom_text(aes(label = ifelse(percent <10, "", paste0(percent,"%"))), position = position_stack(vjust = .5))+
   scale_y_continuous(breaks = seq(0,100, 10))
 
-            
+###################################
+###################################
+###################################
+###################################
+###################################
+###################################
+###################################
+#SOME MORE ON LEARNER JOURNEY
+
+college_FE %>% 
+  filter(!is.na(sg_quintile)) %>% 
+  mutate(category=ifelse(category == "Progress", "Stepping up(n=4,155)",
+                         ifelse(category== "Repeat", "Static(n=7,052)",
+                                "Stepping Down(n=4,767)"))) %>% 
+  ggplot(aes(x=sg_quintile, 
+             y=factor(category,levels = c('Stepping Down(n=4,767)', 'Static(n=7,052)', 'Stepping up(n=4,155)')), 
+             height = ..density.., 
+             fill = category)) +
+  geom_joy(scale=0.85)+
+  theme_bw() +
+  labs(x="SIMD Quintile",
+      y= "SCQF progression",
+      title = "Figure 2: School leaver SCQF progression by income quintile, 2018-19",
+      caption = "NOTE: Omits N/As") +
+  scale_fill_manual(values = c("#6baed6",
+                               "#c6dbef",
+                               "#3182bd")) +
+  theme(legend.position = "none") +
+  annotate('text', x= .5, y=1.5, label ="SIMD020:\n 33.4%")+
+  annotate('segment', x=.6, y=1.5, xend=1, yend=1.5) +
+  annotate('text', x= 5.5, y=1.5, label ="SIMD80100:\n 10.1%")+
+  annotate('segment', x=5.4, y=1.5, xend=5, yend=1.25) 
+ 
+  #wranging for chart above
+
+simda<- college_FE %>% 
+  filter(!is.na(sg_quintile)) %>% 
+  group_by(sg_quintile) %>% 
+  summarise(total =n()) %>% 
+  spread(sg_quintile, total) %>% 
+  mutate(category = "Scotland Overall") %>% 
+  select(category, everything())
+
+simdb <- college_FE %>% 
+  filter(!is.na(sg_quintile)) %>% 
+  group_by(category, sg_quintile) %>% 
+  summarise(total =n()) %>% 
+  spread(sg_quintile, total)
+  
+  
+bind_rows(simda, simdb) %>% 
+  mutate(sum = (`1` + `2` + `3` +`4`+`5`),
+         SIMD020 = round(`1` / sum * 100, 1), 
+         SIMD2040 = round(`2` / sum * 100, 1),
+         SIMD4060 = round(`3` / sum * 100, 1),
+         SIMD6080 = round(`4` / sum * 100, 1),
+         SIMD80100 = round(`5` / sum * 100, 1)) %>% 
+  ###############################################
+  gather("SIMD", "prop", 8:12) %>%
+  mutate(category2=ifelse(category == "Progress", "Stepping up(n=4,155)",
+                         ifelse(category== "Repeat", "Static(n=7,052)",
+                                ifelse(category == "Regress", "Stepping Down(n=4,767)",
+                                       "Scotland Overall (n=15,974)")))) %>% 
+  ggplot(aes(x=factor(category2,levels = c('Stepping Down(n=4,767)', 'Static(n=7,052)', 'Stepping up(n=4,155)', "Scotland Overall (n=15,974)")), 
+             y=prop, 
+             fill = factor(SIMD, levels =c("SIMD80100", "SIMD6080", "SIMD4060", "SIMD2040", "SIMD020"))))+
+  geom_col(position = "stack") +
+  coord_flip()+
+  theme_bw() +
+  theme(legend.title = element_blank()) +
+  geom_text(aes(label = paste0(prop, '%')), position = position_stack(vjust = .5), size = 4.5) +
+  labs(x="Progression status", y="%", title = "Figure 2: Proportion of FE school leavers by SIMD and progression status", caption = "NOTE: Omits NAs") +
+  scale_y_continuous(breaks = seq(0,100, 10), limits = c(0,100.1), expand =c(0,0)) +
+  scale_fill_brewer(palette = "Blues") +
+  annotate('segment', y=0, yend = 100, x=3.5, xend=3.5, size = 1)
