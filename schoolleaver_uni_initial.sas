@@ -210,6 +210,10 @@ postcode=upcase(postcode);
 pcode = compress (postcode) ; 
 run; 
 
+/**************
+BRINGING IN SIMD
+****************/
+
 data simd; 
 set simd.gro19_publiclookup ; 
 length pcode $8. ;
