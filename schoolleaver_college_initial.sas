@@ -126,6 +126,29 @@ if a;
 
 if match ne 1;
 
+run;
 
+/***********************************************************************************************************************
+TRYING TO FIND SCHOOL AGE STUDENTS ON A FECOURSE BUT DIDN'T APPEAR IN SCHOOL LEAVER DATASET
+********************************************/
+proc sort data=schoolleavers_tomerge out = schoolleavers_tomerge;
+by scno dateob Surname;
+run;
+
+proc sort data=pmaupdat.postall1819  out = postall1819;
+by scno dateob Surname;
+run;
+data college_schoolleavers_NOTINSDS;
+merge postall1819 (in=a) schoolleavers_tomerge ;
+by scno dateob Surname;
+if a;
+if mode in (17 18);
+if schoolleaver ne 1;
+if dateob ge '01OCT1999'd;
+if year =1;
+if adv=2;
+
+
+drop Forename Gender;
 
 run;
