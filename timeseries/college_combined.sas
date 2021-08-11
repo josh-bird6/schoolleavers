@@ -8,7 +8,7 @@ dateob = DateOfBirth;
 format dateob ddmmyy10.;
 Surname = UPCASE(Surname);
 Forename = UPCASE(Forename);
-
+ 
 name = soundex(surname);
 initx=scan(Forename, 1, ' ');
 fullname=trim(initx)||''||trim(name)||trim(Surname)||trim(Gender)||dateob;
